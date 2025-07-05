@@ -37,7 +37,7 @@ try {
 
 // ——— Apply schemas ———
 $modelFiles = [
-    'user.model.sql',
+    'users.model.sql',
     'meeting.model.sql',
     'meeting_users.model.sql',
     'tasks.model.sql',
