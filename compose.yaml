@@ -1,0 +1,53 @@
+services:
+  ad-meeting-calendar:
+    build:
+      context: .
+    container_name: ad-meeting-calendar-service
+    ports:
+      - "8000:8000"
+    develop:
+      watch:
+        - path: .
+          target: /var/www/html
+          action: sync
+        - path: ./composer.json
+          action: rebuild
+        - path: ./composer.lock
+          action: rebuild
+    volumes:
+      - .:/var/www/html                     # Mount project files
+      - ./.env:/var/www/html/.env           # ✅ Mount .env file
+    depends_on:
+      - mongodb
+      - postgresql
+
+  mongodb:
+    image: mongo:latest
+    container_name: ad-meeting-calendar-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: rootPassword
+      MONGO_INITDB_DATABASE: newdatabase
+    ports:
+      - "27111:27017"
+    volumes:
+      - ad-meeting-calendar-mongodb:/data/db/mongodb
+
+  postgresql:
+    image: postgres:15
+    container_name: ad-meeting-calendar-postgresql
+    restart: always
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: newdatabase
+    ports:
+      - "5112:5432"
+    volumes:
+      - ad-meeting-calendar-postgresql:/data/db/postgresql
+
+volumes:
+  ad-meeting-calendar-mongodb:
+    driver: local
+  ad-meeting-calendar-postgresql:
+    driver: local
