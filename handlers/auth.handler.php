@@ -47,17 +47,19 @@ if ($action === 'login' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $usernameInput = trim($_POST['username'] ?? '');
     $passwordInput = trim($_POST['password'] ?? '');
 
+    // Log raw inputs for debugging
+    error_log("[auth.handler.php] Username input: '$usernameInput'");
+    error_log("[auth.handler.php] Password input length: " . strlen($passwordInput));
+
     if (Auth::login($pdo, $usernameInput, $passwordInput)) {
         $user = Auth::user();
+        error_log("[auth.handler.php] Login successful: " . var_export($user, true));
 
-        // Role-based redirect
-        if ($user['role'] === 'team lead') {
-            header('Location: /pages/Dashboard/index.php');
-        } else {
-            header('Location: /pages/Dashboard/index.php');
-        }
+        // Redirect by role (you can expand this)
+        header('Location: /pages/Dashboard/index.php');
         exit;
     } else {
+        error_log("[auth.handler.php] Login failed for username: '$usernameInput'");
         header('Location: /index.php?error=Invalid%20Credentials');
         exit;
     }
@@ -65,12 +67,11 @@ if ($action === 'login' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // --- LOGOUT ---
 if ($action === 'logout') {
-    Auth::init();
     Auth::logout();
     header('Location: /index.php');
     exit;
 }
 
-// Default redirect
+// Default fallback
 header('Location: /index.php');
 exit;
