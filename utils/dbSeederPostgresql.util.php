@@ -1,13 +1,28 @@
 <?php
 declare(strict_types=1);
 
-// Load bootstrap (which sets up env, paths, and DB credentials)
+// Load composer autoload and bootstrap
+require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../bootstrap.php';
 
-// Load dummy data
-$users = require STATIC_DATA_PATH . '/users.staticData.php';
+// Load environment config
+$typeConfig = require_once UTILS_PATH . '/envSetter.util.php';
 
-// Connect to PostgreSQL using variables from bootstrap
+// Load dummy users data
+$users = require_once DUMMIES_PATH . '/users.staticData.php';
+
+// Build PostgreSQL DSN
+$dsn = sprintf(
+    "pgsql:host=%s;port=%s;dbname=%s",
+    $typeConfig['pgHost'],
+    $typeConfig['pgPort'],
+    $typeConfig['pgDB']
+);
+
+$user = $typeConfig['pgUser'];
+$password = $typeConfig['pgPass'];
+
+// Connect to PostgreSQL
 try {
     $pdo = new PDO($dsn, $user, $password, [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
@@ -17,11 +32,10 @@ try {
     exit("❌ Database connection failed: " . $e->getMessage() . "\n");
 }
 
-// Load SQL schema file and run it
+// Load SQL model/schema for users
 $modelFile = BASE_PATH . '/database/users.model.sql';
-
 if (!file_exists($modelFile)) {
-    exit("❌ Could not read $modelFile\n");
+    exit("❌ Could not find schema file: $modelFile\n");
 }
 
 $sql = file_get_contents($modelFile);
@@ -34,20 +48,17 @@ $stmt = $pdo->prepare("
     VALUES (:username, :email, :role, :fn, :ln, :pw)
 ");
 
-
 // Seed users
 echo "🌱 Seeding users…\n";
-
 foreach ($users as $u) {
-   $stmt->execute([
-    ':username' => $u['username'],
-    ':email'    => $u['email'],
-    ':role'     => $u['role'],
-    ':fn'       => $u['first_name'],
-    ':ln'       => $u['last_name'],
-    ':pw'       => password_hash($u['password'], PASSWORD_DEFAULT),
-]);
-
+    $stmt->execute([
+        ':username' => $u['username'],
+        ':email'    => $u['email'],
+        ':role'     => $u['role'],
+        ':fn'       => $u['first_name'],
+        ':ln'       => $u['last_name'],
+        ':pw'       => password_hash($u['password'], PASSWORD_DEFAULT),
+    ]);
 }
 
 echo "✅ PostgreSQL seeding complete!\n";
