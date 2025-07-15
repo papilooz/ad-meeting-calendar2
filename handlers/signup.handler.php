@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 require_once BASE_PATH . '/bootstrap.php';
 require_once BASE_PATH . '/vendor/autoload.php';
-require_once UTILS_PATH . '/envSetter.util.php';
+$databases = require_once UTILS_PATH . '/envSetter.util.php';
 require_once UTILS_PATH . '/signup.util.php';
 require_once UTILS_PATH . '/auth.util.php';
 
@@ -11,10 +11,10 @@ require_once UTILS_PATH . '/auth.util.php';
 Auth::init();
 
 // Build PDO
-$host = 'host.docker.internal';
+$host = $databases['pgHost'];
 $port = $databases['pgPort'];
 $dbUser = $databases['pgUser'];
-$dbPass = $databases['pgPassword'];
+$dbPass = $databases['pgPass'];
 $dbName = $databases['pgDB'];
 
 $dsn = "pgsql:host={$host};port={$port};dbname={$dbName}";
@@ -51,22 +51,22 @@ if (count($errors) > 0) {
 // 2) Create user
 try {
     Signup::create($pdo, $input);
+    $user = Signup::findByUsername($pdo, $input['username']);
+    Auth::login($user);
 
 } catch (PDOException $e) {
-    // Duplicate username?
     if ($e->getCode() === '23505') {
         $_SESSION['signup_errors'] = ['Username already taken.'];
         $_SESSION['signup_old'] = $input;
         header('Location: /pages/signup/index.php');
         exit;
     }
-    // Otherwise, fail hard
+
     error_log('[signup.handler] PDOException: ' . $e->getMessage());
     http_response_code(500);
     exit('Server error.');
 }
 
-// 3) Success — clear old flashes and redirect to login
 unset($_SESSION['signup_errors'], $_SESSION['signup_old']);
-header('Location: /pages/login/index.php?message=Account%created%successfully');
+header('Location: /pages/Dashboard/index.php');
 exit;
