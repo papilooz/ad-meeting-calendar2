@@ -1,43 +1,54 @@
 <?php
 declare(strict_types=1);
-session_start();
+require_once BASE_PATH . '/bootstrap.php';
+require_once BASE_PATH . '/vendor/autoload.php';
+require_once UTILS_PATH . '/auth.util.php';
+require_once UTILS_PATH . '/envSetter.util.php';
 
-// Bootstrap + DB config
-require_once '../bootstrap.php';
-require_once UTILS_PATH . 'envSetter.util.php';
+// Initialize session
+Auth::init();
 
-$pgConfig = [
-    'host' => $typeConfig['pg_host'],
-    'port' => $typeConfig['pg_port'],
-    'db'   => $typeConfig['pg_db'],
-    'user' => $typeConfig['pg_user'],
-    'pass' => $typeConfig['pg_pass'],
-];
+$host = 'host.docker.internal';
+$port = $databases['pgPort'];
+$username = $databases['pgUser'];
+$password = $databases['pgPassword'];
+$dbname = $databases['pgDB'];
 
-$dsn = "pgsql:host={$pgConfig['host']};port={$pgConfig['port']};dbname={$pgConfig['db']}";
-$pdo = new PDO($dsn, $pgConfig['user'], $pgConfig['pass']);
+// Connect to Postgres
+$dsn = "pgsql:host={$host};port={$port};dbname={$dbname}";
+$pdo = new PDO($dsn, $username, $password, [
+    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+]);
 
-// Handle input
-$username = $_POST['username'] ?? '';
-$password = $_POST['password'] ?? '';
+$action = $_REQUEST['action'] ?? null;
 
-// Fetch user
-$stmt = $pdo->prepare("SELECT * FROM users WHERE username = :username");
-$stmt->execute([':username' => $username]);
-$user = $stmt->fetch(PDO::FETCH_ASSOC);
+// --- LOGIN ---
+if ($action === 'login' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    $usernameInput = trim($_POST['username'] ?? '');
+    $passwordInput = trim($_POST['password'] ?? '');
+    if (Auth::login($pdo, $usernameInput, $passwordInput)) {
+        $user = Auth::user();
 
-if (!$user || !password_verify($password, $user['password'])) {
-    $_SESSION['error'] = 'Invalid username or password';
-    header('Location: /login.php');
+        if ($user["role"] == "team lead") {
+            header('Location: /pages/users/index.php');
+        } else {
+            header('Location: /index.php');
+        }
+        exit;
+    } else {
+        header('Location: /pages/login/index.php?error=Invalid%Credentials');
+        exit;
+    }
+}
+
+// --- LOGOUT ---
+elseif ($action === 'logout') {
+    Auth::init();
+    Auth::logout();
+    header('Location: /pages/login/index.php');
     exit;
 }
 
-// Save session
-$_SESSION['user'] = [
-    'id' => $user['id'],
-    'username' => $user['username'],
-    'role' => $user['role']
-];
-
-header('Location: /index.php');
+// If no valid action, redirect to login
+header('Location: /pages/login/index.php');
 exit;
