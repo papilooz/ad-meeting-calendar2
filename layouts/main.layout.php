@@ -28,3 +28,4 @@ function renderMainLayout(callable $content, string $title, array $customJsCss =
     $content();
     footer($customJsCss['js'] ?? []);
 }
+
