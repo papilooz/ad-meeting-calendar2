@@ -2,24 +2,24 @@
 declare(strict_types=1);
 
 // 1) Composer autoload
-require 'vendor/autoload.php';
+require_once 'vendor/autoload.php';
 
-// 2) Composer bootstrap
-require 'bootstrap.php';
+// 2) Project bootstrap
+require_once 'bootstrap.php';
 
-// 3) envSetter
-$typeConfig = require_once UTILS_PATH . 'envSetter.util.php';
+// 3) Load environment settings
+$typeConfig = require_once UTILS_PATH . '/envSetter.util.php';
 
-// Prepare config array
+// Build config array
 $pgConfig = [
-    'host' => $typeConfig['pg_host'],
-    'port' => $typeConfig['pg_port'],
-    'db'   => $typeConfig['pg_db'],
-    'user' => $typeConfig['pg_user'],
-    'pass' => $typeConfig['pg_pass'],
+    'host' => $typeConfig['pgHost'],
+    'port' => $typeConfig['pgPort'],
+    'db'   => $typeConfig['pgDB'],
+    'user' => $typeConfig['pgUser'],
+    'pass' => $typeConfig['pgPass'],
 ];
 
-// ——— Connect to PostgreSQL ———
+// Connect to PostgreSQL
 $dsn = "pgsql:host={$pgConfig['host']};port={$pgConfig['port']};dbname={$pgConfig['db']}";
 
 try {
@@ -31,20 +31,17 @@ try {
     echo "❌ Connection Failed: " . $e->getMessage() . "\n";
     exit(1);
 }
-// ——— Drop existing tables ———
-echo "🧹 Dropping old tables…\n";
 
-foreach ([
-    'meeting_users',
-    'tasks',
-    'meetings',
-    'users',
-    'projects' // ← include any other tables you expect to exist
-] as $table) {
+// Drop existing tables
+echo "🧹 Dropping old tables…\n";
+$tables = ['meeting_users', 'tasks', 'meetings', 'users', 'projects'];
+
+foreach ($tables as $table) {
     $pdo->exec("DROP TABLE IF EXISTS {$table} CASCADE;");
     echo "✅ Dropped: {$table}\n";
 }
-// ——— Re-apply schema files ———
+
+// Re-apply schema files
 $modelFiles = [
     'users.model.sql',
     'meeting.model.sql',
@@ -53,18 +50,17 @@ $modelFiles = [
 ];
 
 foreach ($modelFiles as $modelFile) {
-    $path = BASE_PATH . "/database/{$modelFile}";
+    $path = DATABASE_PATH . "/{$modelFile}";
     echo "📄 Applying schema from {$path}…\n";
 
     $sql = file_get_contents($path);
 
     if ($sql === false) {
         throw new RuntimeException("❌ Could not read {$path}");
-    } else {
-        echo "✅ Created from {$modelFile}\n";
     }
 
     $pdo->exec($sql);
+    echo "✅ Created from {$modelFile}\n";
 }
 
 echo "🎉 Migration Complete!\n";
