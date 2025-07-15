@@ -6,10 +6,9 @@ require_once UTILS_PATH . '/auth.util.php';
 Auth::init();
 
 if (Auth::check()) {
-    header('Location: /pages/Dashboard/index.php');
+    header('Location: /index.php');
     exit;
 }
-
 
 // call the layout you want to use from layout folder
 require_once LAYOUTS_PATH . "/main.layout.php";
@@ -63,7 +62,8 @@ renderMainLayout(
     $title,
     [
         "css" => [
-            "./assets/css/login.css"
-        ],
+    "/pages/login/assets/login.css"  // ✅ Correct relative to web root
+]
+,
     ]
 );
