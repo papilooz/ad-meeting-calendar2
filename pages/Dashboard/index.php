@@ -1,14 +1,13 @@
 <?php
 // call the layout you want to use from layout folder
 require_once LAYOUTS_PATH . "/main.layout.php";
-$mongoCheckerResult = require_once HANDLERS_PATH . "/mongodbChecker.handler.php";
 $postgresqlCheckerResult = require_once HANDLERS_PATH . "/postgreChecker.handler.php";
 
 $title = "Landing Page";
 
 // functions that will render the layout of your choosing
 renderMainLayout(
-    function () use ($mongoCheckerResult, $postgresqlCheckerResult) {
+    function () use ($postgresqlCheckerResult) {
         // Data for features
         require_once STATICDATAS_PATH . "/feature.staticData.php";
         ?>
