@@ -29,11 +29,12 @@ if ($action === 'login' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     if (Auth::login($pdo, $usernameInput, $passwordInput)) {
         $user = Auth::user();
 
-        if ($user["role"] == "team lead") {
-            header('Location: /pages/users/index.php');
-        } else {
-            header('Location: /index.php');
-        }
+     if ($user["role"] == "team lead") {
+    header('Location: /pages/Dashboard/index.php'); // <-- updated redirect path
+} else {
+    header('Location: /pages/Dashboard/index.php'); // <-- same path for others
+}
+
         exit;
     } else {
         header('Location: /pages/login/index.php?error=Invalid%Credentials');
