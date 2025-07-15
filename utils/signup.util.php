@@ -64,7 +64,6 @@ class Signup
      */
     public static function create(PDO $pdo, array $data): void
     {
-        // Prepare insert
         $stmt = $pdo->prepare("
             INSERT INTO public.\"users\"
               (first_name, middle_name, last_name, username, password, role)
@@ -72,10 +71,8 @@ class Signup
               (:first, :middle, :last, :username, :password, :role)
         ");
 
-        // Hash password
         $hashed = password_hash($data['password'], PASSWORD_DEFAULT);
 
-        // Bind and execute
         $stmt->execute([
             ':first' => trim($data['first_name']),
             ':middle' => trim($data['middle_name']) !== '' ? trim($data['middle_name']) : null,
@@ -84,5 +81,20 @@ class Signup
             ':password' => $hashed,
             ':role' => trim($data['role']),
         ]);
+    }
+
+    /**
+     * Find a user by username.
+     *
+     * @param PDO $pdo
+     * @param string $username
+     * @return array|null
+     */
+    public static function findByUsername(PDO $pdo, string $username): ?array
+    {
+        $stmt = $pdo->prepare('SELECT * FROM public."users" WHERE username = :username LIMIT 1');
+        $stmt->execute([':username' => $username]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $user ?: null;
     }
 }
