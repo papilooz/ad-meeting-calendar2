@@ -9,3 +9,4 @@ CREATE TABLE IF NOT EXISTS public."users" (
     last_name VARCHAR(100),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
