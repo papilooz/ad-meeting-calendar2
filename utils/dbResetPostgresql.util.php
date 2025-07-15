@@ -8,15 +8,15 @@ require 'vendor/autoload.php';
 require 'bootstrap.php';
 
 // 3) envSetter
-$typeConfig = require_once UTILS_PATH . 'envSetter.util.php';
+$typeConfig = require_once UTILS_PATH . '/envSetter.util.php';
 
 // Prepare config array
 $pgConfig = [
-    'host' => $typeConfig['pg_host'],
-    'port' => $typeConfig['pg_port'],
-    'db'   => $typeConfig['pg_db'],
-    'user' => $typeConfig['pg_user'],
-    'pass' => $typeConfig['pg_pass'],
+    'host' => $typeConfig['pgHost'],
+    'port' => $typeConfig['pgPort'],
+    'db'   => $typeConfig['pgDB'],
+    'user' => $typeConfig['pgUser'],
+    'pass' => $typeConfig['pgPass'],
 ];
 
 
