@@ -1,6 +1,6 @@
 <?php
 // ✅ Load env config
-$config = require_once UTILS_PATH . 'envSetter.util.php'; // Now $config is defined
+$config = require_once UTILS_PATH . '/envSetter.util.php'; // <-- fixed missing slash
 
 try {
     // ✅ Create MongoDB connection using URI from config
