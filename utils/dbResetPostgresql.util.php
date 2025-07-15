@@ -41,6 +41,7 @@ $modelFiles = [
     'meeting.model.sql',
     'meeting_users.model.sql',
     'tasks.model.sql',
+    'images.model.sql'
 ];
 
 foreach ($modelFiles as $modelFile) {
@@ -61,7 +62,7 @@ $path = __DIR__ . "/../database/{$modelFile}";
 // ——— TRUNCATE tables ———
 echo "Truncating tables…\n";
 
-$tables = ['meeting_users', 'tasks', 'meetings', 'users'];
+$tables = ['meeting_users', 'tasks', 'meetings', 'images', 'users'];
 
 foreach ($tables as $table) {
     $pdo->exec("TRUNCATE TABLE {$table} RESTART IDENTITY CASCADE;");

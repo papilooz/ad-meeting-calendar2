@@ -32,13 +32,24 @@ try {
     exit(1);
 }
 
-// Drop existing tables
+// Drop existing tables (in dependency-safe order)
 echo "🧹 Dropping old tables…\n";
-$tables = ['meeting_users', 'tasks', 'meetings', 'users', 'projects'];
+$tables = [
+    'public.meeting_users',
+    'public.tasks',
+    'public.meetings',
+    'public.projects',  // adjust order if projects depend on meetings
+    'public.images',
+    'public.users'
+];
 
 foreach ($tables as $table) {
-    $pdo->exec("DROP TABLE IF EXISTS {$table} CASCADE;");
-    echo "✅ Dropped: {$table}\n";
+    try {
+        $pdo->exec("DROP TABLE IF EXISTS {$table} CASCADE;");
+        echo "✅ Dropped: {$table}\n";
+    } catch (PDOException $e) {
+        echo "⚠️ Error dropping {$table}: " . $e->getMessage() . "\n";
+    }
 }
 
 // Re-apply schema files
@@ -47,20 +58,31 @@ $modelFiles = [
     'meeting.model.sql',
     'meeting_users.model.sql',
     'tasks.model.sql',
+    'images.model.sql'
 ];
 
 foreach ($modelFiles as $modelFile) {
     $path = DATABASE_PATH . "/{$modelFile}";
     echo "📄 Applying schema from {$path}…\n";
 
+    if (!file_exists($path)) {
+        echo "❌ File not found: {$path}\n";
+        continue;
+    }
+
     $sql = file_get_contents($path);
 
     if ($sql === false) {
-        throw new RuntimeException("❌ Could not read {$path}");
+        echo "❌ Failed to read file: {$path}\n";
+        continue;
     }
 
-    $pdo->exec($sql);
-    echo "✅ Created from {$modelFile}\n";
+    try {
+        $pdo->exec($sql);
+        echo "✅ Created from {$modelFile}\n";
+    } catch (PDOException $e) {
+        echo "❌ Failed to apply {$modelFile}: " . $e->getMessage() . "\n";
+    }
 }
 
 echo "🎉 Migration Complete!\n";
