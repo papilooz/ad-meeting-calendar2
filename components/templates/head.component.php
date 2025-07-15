@@ -13,7 +13,7 @@ function head($pageTitle, array $pageCss = [])
             <title><?= htmlEscape($pageTitle ?? 'My Shop') ?></title>
 
             <!-- Favicon -->
-            <link rel="icon" type="image/png" href="/assets/img/theelite.png">
+            <link rel="icon" type="image/png" href="/assets/img/yesyes.png">
 
             <?php
             if (!empty($pageCss)) {

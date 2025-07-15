@@ -8,7 +8,7 @@ function footerComponent()
             
             <!-- Logo and Brand -->
             <div class="flex flex-col items-start">
-                <img src="/assets/img/theelite-logo.png" alt="The Elite Logo" class="h-10 w-10 mb-2">
+                <img src="/assets/img/yesyes.png" alt="The Elite Logo" class="h-10 w-10 mb-2">
                 <span class="font-bold text-lg text-white">The Elite</span>
                 <p class="text-sm text-gray-400 mt-1">Empowering collaboration one meeting at a time.</p>
             </div>
