@@ -64,23 +64,26 @@ class Signup
      */
     public static function create(PDO $pdo, array $data): void
     {
-        $stmt = $pdo->prepare("
-            INSERT INTO public.\"users\"
-              (first_name, middle_name, last_name, username, password, role)
-            VALUES
-              (:first, :middle, :last, :username, :password, :role)
-        ");
+       $stmt = $pdo->prepare("
+    INSERT INTO public.\"users\"
+      (first_name, middle_name, last_name, username, email, password, role)
+    VALUES
+      (:first, :middle, :last, :username, :email, :password, :role)
+");
+
 
         $hashed = password_hash($data['password'], PASSWORD_DEFAULT);
 
-        $stmt->execute([
-            ':first' => trim($data['first_name']),
-            ':middle' => trim($data['middle_name']) !== '' ? trim($data['middle_name']) : null,
-            ':last' => trim($data['last_name']),
-            ':username' => trim($data['username']),
-            ':password' => $hashed,
-            ':role' => trim($data['role']),
-        ]);
+       $stmt->execute([
+    ':first' => trim($data['first_name']),
+    ':middle' => trim($data['middle_name']) !== '' ? trim($data['middle_name']) : null,
+    ':last' => trim($data['last_name']),
+    ':username' => trim($data['username']),
+    ':email' => trim($data['email']), // ✅ ADD THIS
+    ':password' => $hashed,
+    ':role' => trim($data['role']),
+]);
+
     }
 
     /**
